@@ -102,8 +102,9 @@ export default function Header({ onContactClick }) {
           </Link>
 
           <a
-            href="/#property-listings"
-            className="text-[13px] font-medium text-[#E7EAF0] transition-colors hover:text-[#C99A4A]"
+            href={`${import.meta.env.BASE_URL}#property-listings`}
+            className="text-[13px] font-medium transition-colors hover:text-[#C99A4A]"
+            style={{ color: "#E7EAF0" }}
           >
             Property Listings
           </a>
@@ -194,9 +195,9 @@ export default function Header({ onContactClick }) {
           </Link>
 
           <a
-            href="/#property-listings"
-            onClick={closeMenu}
-            className="text-[#E7EAF0]"
+            href={`${import.meta.env.BASE_URL}#property-listings`}
+            onClick={() => setOpen(false)}
+            style={{ color: "#E7EAF0" }}
           >
             Property Listings
           </a>
