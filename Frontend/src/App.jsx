@@ -5,6 +5,7 @@ import About from "./pages/About.jsx";
 import PropertyManagement from "./pages/PropertyManagement.jsx";
 import DigitalMarketing from "./pages/DigitalMarketing.jsx";
 import Travel from "./pages/Travel.jsx";
+import Partners from "./pages/Partners.jsx";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Route path="/property-management" element={<PropertyManagement />} />
       <Route path="/digital-marketing" element={<DigitalMarketing />} />
       <Route path="/travel" element={<Travel />} />
+      <Route path="/partners" element={<Partners />} />
     </Routes>
   );
 }

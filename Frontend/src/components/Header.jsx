@@ -25,6 +25,7 @@ export default function Header({ onContactClick }) {
   const isPropertyManagement = location.pathname === "/property-management";
   const isDigitalMarketing = location.pathname === "/digital-marketing";
   const isTravel = location.pathname === "/travel";
+  const isPartners = location.pathname === "/partners";
 
   const closeMenu = () => setOpen(false);
 
@@ -127,12 +128,15 @@ export default function Header({ onContactClick }) {
             Travel
           </Link>
 
-          <a
-            href="/#partners"
-            className="text-[13px] font-medium text-[#E7EAF0] transition-colors hover:text-[#C99A4A]"
+          <Link
+            to="/partners"
+            className="text-[13px] font-medium transition-colors hover:text-[#C99A4A]"
+            style={{
+              color: isPartners ? C.gold : "#E7EAF0",
+            }}
           >
             Our Partners
-          </a>
+          </Link>
 
           <Link
             to="/about"
@@ -217,14 +221,15 @@ export default function Header({ onContactClick }) {
             Travel
           </Link>
 
-          <a
-            href="/#partners"
-            onClick={closeMenu}
-            className="text-[#E7EAF0]"
+          <Link
+            to="/partners"
+            onClick={() => setOpen(false)}
+            style={{
+              color: isPartners ? C.gold : "#E7EAF0",
+            }}
           >
             Our Partners
-          </a>
-
+          </Link>
           <Link
             to="/about"
             onClick={closeMenu}
