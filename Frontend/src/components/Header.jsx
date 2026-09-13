@@ -23,6 +23,8 @@ export default function Header({ onContactClick }) {
   const isHome = location.pathname === "/";
   const isAbout = location.pathname === "/about";
   const isPropertyManagement = location.pathname === "/property-management";
+  const isDigitalMarketing = location.pathname === "/digital-marketing";
+  const isTravel = location.pathname === "/travel";
 
   const closeMenu = () => setOpen(false);
 
@@ -105,19 +107,25 @@ export default function Header({ onContactClick }) {
             Property Listings
           </a>
 
-          <a
-            href="/#digital-marketing"
-            className="text-[13px] font-medium text-[#E7EAF0] transition-colors hover:text-[#C99A4A]"
+          <Link
+            to="/digital-marketing"
+            className="text-[13px] font-medium transition-colors hover:text-[#C99A4A]"
+            style={{
+              color: isDigitalMarketing ? C.gold : "#E7EAF0",
+            }}
           >
             Digital & Online Marketing
-          </a>
+          </Link>
 
-          <a
-            href="/#travel"
-            className="text-[13px] font-medium text-[#E7EAF0] transition-colors hover:text-[#C99A4A]"
+          <Link
+            to="/travel"
+            className="text-[13px] font-medium transition-colors hover:text-[#C99A4A]"
+            style={{
+              color: isTravel ? C.gold : "#E7EAF0",
+            }}
           >
             Travel
-          </a>
+          </Link>
 
           <a
             href="/#partners"
@@ -189,21 +197,25 @@ export default function Header({ onContactClick }) {
             Property Listings
           </a>
 
-          <a
-            href="/#digital-marketing"
-            onClick={closeMenu}
-            className="text-[#E7EAF0]"
+          <Link
+            to="/digital-marketing"
+            onClick={() => setOpen(false)}
+            style={{
+              color: isDigitalMarketing ? C.gold : "#E7EAF0",
+            }}
           >
             Digital & Online Marketing
-          </a>
+          </Link>
 
-          <a
-            href="/#travel"
-            onClick={closeMenu}
-            className="text-[#E7EAF0]"
+          <Link
+            to="/travel"
+            onClick={() => setOpen(false)}
+            style={{
+              color: isTravel ? C.gold : "#E7EAF0",
+            }}
           >
             Travel
-          </a>
+          </Link>
 
           <a
             href="/#partners"

@@ -33,7 +33,7 @@ export default function About() {
       icon: MonitorUp,
       title: "Digital & Online Marketing",
       description: "Helping hospitality brands grow online.",
-      link: "/#digital-marketing",
+      link: "/digital-marketing",
       linkText: "Our Services",
     },
     {
