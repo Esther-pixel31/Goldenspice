@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import {
   Building2,
@@ -420,10 +421,14 @@ function AboutUs() {
             title="Your Trusted Partner in Property, Hospitality & Travel"
             desc="We bring together expertise in property management, digital marketing and travel services to deliver exceptional value and long-term results. Our commitment is to professionalism, transparency and client satisfaction."
           />
+
           <div className="mt-6">
-            <GoldButton>Read More About Us</GoldButton>
+           <Link to="/about">
+              <GoldButton>Read More About Us</GoldButton>
+            </Link>
           </div>
         </div>
+
         <div
           className="h-72 md:h-[420px] bg-cover bg-center"
           style={{
@@ -480,7 +485,9 @@ function PropertyManagement() {
             dark
           />
           <div className="shrink-0">
-            <GoldButton>View Details</GoldButton>
+            <Link to="/property-management">
+              <GoldButton>View Details</GoldButton>
+            </Link>
           </div>
         </div>
 
@@ -654,7 +661,11 @@ function DigitalMarketing() {
               </div>
             ))}
           </div>
-          <NavyButton>Explore Our Marketing Services</NavyButton>
+          
+          <Link to="/digital-marketing">
+            <NavyButton>Explore Our Marketing Services</NavyButton>
+          </Link>
+       
         </div>
       </div>
     </section>
@@ -671,57 +682,116 @@ function TravelServices() {
       icon: Plane,
       title: "Air Ticketing",
       desc: "Through our GDS, we provide the most direct and convenient routing with the best value.",
-      bullets: ["Alternative airlines", "Alternative routes", "Alternative timings", "Alternative dates"],
+      bullets: [
+        "Alternative airlines",
+        "Alternative routes",
+        "Alternative timings",
+        "Alternative dates",
+      ],
     },
     {
       icon: Building,
       title: "Hotel Bookings",
       desc: "We offer the best rates and a wide selection of hotels worldwide.",
-      bullets: ["Broad selection", "Easy booking options", "Competitive rates guaranteed"],
+      bullets: [
+        "Broad selection",
+        "Easy booking options",
+        "Competitive rates guaranteed",
+      ],
     },
     {
       icon: FileText,
       title: "Visa Processing",
       desc: "Our experienced team provides end-to-end support for visa applications.",
-      bullets: ["Guidance & consultation", "Document requirements", "Consulate & embassy liaison"],
+      bullets: [
+        "Guidance & consultation",
+        "Document requirements",
+        "Consulate & embassy liaison",
+      ],
     },
   ];
+
   return (
-    <section id="digital-marketing" style={{ background: C.lightBg }}
-      className="scroll-mt-20 py-16">
-      <SectionHeading
-        eyebrow="Travel Services"
-        title="Travel Smarter. Travel Better."
-        desc="Reliable travel solutions for your business and leisure needs."
-      />
-      <div className="grid md:grid-cols-3 gap-10 mt-10">
-        {cols.map(({ icon: Icon, title, desc, bullets }) => (
-          <div key={title}>
-            <Icon size={26} style={{ color: C.gold }} className="mb-3" />
-            <h3
-              className="font-bold text-[15px] mb-2"
-              style={{ color: C.navy, ...heading }}
-            >
-              {title}
-            </h3>
-            <p className="text-[13px] leading-relaxed mb-3" style={{ color: C.sub, ...body }}>
-              {desc}
-            </p>
-            <ul className="space-y-1.5 mb-2">
-              {bullets.map((b) => (
-                <li
-                  key={b}
-                  className="flex items-center gap-2 text-[12px]"
-                  style={{ color: C.sub, ...body }}
-                >
-                  <CheckCircle2 size={13} style={{ color: C.gold }} />
-                  {b}
-                </li>
-              ))}
-            </ul>
-            <LearnMore />
-          </div>
-        ))}
+    <section
+      id="travel"
+      className="scroll-mt-20 py-12 md:py-14"
+      style={{ background: C.lightBg }}
+    >
+      <div className="w-full px-5 md:px-8 lg:px-12">
+
+        <SectionHeading
+          eyebrow="Travel Services"
+          title="Travel Smarter. Travel Better."
+          desc="Reliable travel solutions for your business and leisure needs."
+        />
+
+        <div className="grid md:grid-cols-3 gap-x-12 gap-y-8 mt-8">
+          {cols.map(({ icon: Icon, title, desc, bullets }) => (
+            <div key={title} className="min-w-0">
+
+              <Icon
+                size={26}
+                style={{ color: C.gold }}
+                className="mb-3"
+              />
+
+              <h3
+                className="font-bold text-[15px] mb-2"
+                style={{
+                  color: C.navy,
+                  ...heading,
+                }}
+              >
+                {title}
+              </h3>
+
+              <p
+                className="text-[13px] leading-relaxed mb-3"
+                style={{
+                  color: C.sub,
+                  ...body,
+                }}
+              >
+                {desc}
+              </p>
+
+              <ul className="space-y-1.5 mb-2">
+                {bullets.map((bullet) => (
+                  <li
+                    key={bullet}
+                    className="flex items-center gap-2 text-[12px]"
+                    style={{
+                      color: C.sub,
+                      ...body,
+                    }}
+                  >
+                    <CheckCircle2
+                      size={13}
+                      className="shrink-0"
+                      style={{ color: C.gold }}
+                    />
+
+                    {bullet}
+                  </li>
+                ))}
+              </ul>
+
+              <Link to="/travel">
+                <LearnMore />
+              </Link>
+
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8">
+          <Link to="/travel">
+            <NavyButton>
+              Explore Our Travel Services
+            </NavyButton>
+          </Link>
+        </div>
+
       </div>
     </section>
   );
