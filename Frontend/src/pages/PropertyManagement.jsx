@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Building2,
   Users,
@@ -14,7 +15,9 @@ import {
 } from "lucide-react";
 
 import Header from "../components/Header.jsx";
+import ContactModal from "../components/ContactModal.jsx";
 import logo from "../assets/logo.png";
+import Footer from "../components/Footer.jsx";
 
 const C = {
   navy: "#0B2043",
@@ -24,6 +27,7 @@ const C = {
 };
 
 export default function PropertyManagement() {
+  const [contactOpen, setContactOpen] = useState(false);
   const lettingServices = [
     "Property assessment",
     "Rental pricing",
@@ -595,83 +599,30 @@ export default function PropertyManagement() {
           requirements.
         </p>
 
-        <a
-          href={`${import.meta.env.BASE_URL}#contact`}
-          className="mt-8 inline-flex items-center gap-2 px-7 py-3 text-sm font-bold uppercase tracking-wide"
-          style={{ background: C.gold, color: C.navy }}
+        <button
+          type="button"
+          onClick={() => setContactOpen(true)}
+          className="mt-8 inline-flex items-center gap-2 px-7 py-3 text-sm font-bold uppercase tracking-wide transition-opacity hover:opacity-90"
+          style={{
+            background: C.gold,
+            color: C.navy,
+          }}
         >
           Get In Touch
           <ArrowRight size={16} />
-        </a>
+        </button>
       </section>
 
-      {/* FOOTER */}
-      <footer style={{ background: "#04152B" }} className="text-white">
+      {/* SHARED FOOTER */}
+      <Footer
+        onContactClick={() => setContactOpen(true)}
+      />
 
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-3 lg:px-8">
-
-          <div>
-            <img
-              src={logo}
-              alt="Goldenspice"
-              className="mb-4 h-12 w-auto"
-            />
-
-            <p className="max-w-sm text-sm leading-6 text-[#AEB7C4]">
-              Your trusted partner in property management, digital marketing
-              and travel services.
-            </p>
-          </div>
-
-          <div>
-            <h4 className="mb-4 font-bold">
-              Quick Links
-            </h4>
-
-            <div className="flex flex-col gap-2 text-sm text-[#AEB7C4]">
-              <a href={import.meta.env.BASE_URL}>Home</a>
-
-              <a href={`${import.meta.env.BASE_URL}property-management`}>
-                Property Management
-              </a>
-
-              <a href={`${import.meta.env.BASE_URL}#property-listings`}>
-                Property Listings
-              </a>
-
-              <a href={`${import.meta.env.BASE_URL}#digital-marketing`}>
-                Digital & Online Marketing
-              </a>
-
-              <a href={`${import.meta.env.BASE_URL}#travel`}>
-                Travel
-              </a>
-
-              <a href={`${import.meta.env.BASE_URL}about`}>
-                About Us
-              </a>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="mb-4 font-bold">
-              Contact Us
-            </h4>
-
-            <p className="text-sm leading-7 text-[#AEB7C4]">
-              Nairobi, Kenya
-              <br />
-              info@goldenspice.co.ke
-            </p>
-          </div>
-
-        </div>
-
-        <div className="border-t border-white/10 px-6 py-5 text-center text-xs text-[#8B94A3]">
-          © Goldenspice. All Rights Reserved.
-        </div>
-
-      </footer>
+      {/* SHARED CONTACT MODAL */}
+      <ContactModal
+        open={contactOpen}
+        onClose={() => setContactOpen(false)}
+      />
 
     </div>
   );
