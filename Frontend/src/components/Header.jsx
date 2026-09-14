@@ -26,6 +26,7 @@ export default function Header({ onContactClick }) {
   const isDigitalMarketing = location.pathname === "/digital-marketing";
   const isTravel = location.pathname === "/travel";
   const isPartners = location.pathname === "/partners";
+  const isPropertyListings = location.pathname === "/property-listings";
 
   const closeMenu = () => setOpen(false);
 
@@ -101,13 +102,15 @@ export default function Header({ onContactClick }) {
             Property Management
           </Link>
 
-          <a
-            href={`${import.meta.env.BASE_URL}#property-listings`}
+          <Link
+            to="/property-listings"
             className="text-[13px] font-medium transition-colors hover:text-[#C99A4A]"
-            style={{ color: "#E7EAF0" }}
+            style={{
+              color: isPropertyListings ? C.gold : "#E7EAF0",
+            }}
           >
             Property Listings
-          </a>
+          </Link>
 
           <Link
             to="/digital-marketing"
@@ -194,13 +197,15 @@ export default function Header({ onContactClick }) {
             Property Management
           </Link>
 
-          <a
-            href={`${import.meta.env.BASE_URL}#property-listings`}
+          <Link
+            to="/property-listings"
             onClick={() => setOpen(false)}
-            style={{ color: "#E7EAF0" }}
+            style={{
+              color: isPropertyListings ? C.gold : "#E7EAF0",
+            }}
           >
             Property Listings
-          </a>
+          </Link>
 
           <Link
             to="/digital-marketing"
