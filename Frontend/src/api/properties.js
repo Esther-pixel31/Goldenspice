@@ -1,6 +1,4 @@
-cat > src/api/properties.js <<'EOF'
 const API_BASE_URL = "http://127.0.0.1:8000";
-
 
 function normalizeProperty(property) {
   return {
@@ -10,7 +8,6 @@ function normalizeProperty(property) {
     image: property.image_url,
   };
 }
-
 
 export async function getProperties() {
   const response = await fetch(
@@ -27,7 +24,6 @@ export async function getProperties() {
 
   return properties.map(normalizeProperty);
 }
-
 
 export async function getPropertyBySlug(slug) {
   const response = await fetch(
@@ -48,4 +44,3 @@ export async function getPropertyBySlug(slug) {
 
   return normalizeProperty(property);
 }
-EOF
