@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Search,
@@ -13,10 +13,10 @@ import {
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import ContactModal from "../components/ContactModal.jsx";
-import {
-  properties,
-  formatPropertyPrice,
-} from "../data/properties.js";
+
+import { getProperties } from "../api/properties";
+import { formatPropertyPrice } from "../utils/property.js";
+
 
 const C = {
   navy: "#0B2043",
@@ -27,6 +27,7 @@ const C = {
   sub: "#5B6472",
 };
 
+
 export default function PropertyListings() {
   const [contactOpen, setContactOpen] = useState(false);
 
@@ -34,10 +35,42 @@ export default function PropertyListings() {
   const [listingType, setListingType] = useState("ALL");
   const [propertyType, setPropertyType] = useState("ALL");
 
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+
+  // Load properties from FastAPI.
+  useEffect(() => {
+    async function loadProperties() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getProperties();
+
+        setProperties(data);
+      } catch (err) {
+        console.error(
+          "Failed to load properties:",
+          err
+        );
+
+        setError(
+          "We could not load the property listings."
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProperties();
+  }, []);
+
+
+  // Filter the properties already loaded from the API.
   const filteredProperties = useMemo(() => {
     return properties.filter((property) => {
-      // Sold, rented and unavailable properties are not
-      // shown in the normal public listing results.
       if (property.status !== "AVAILABLE") {
         return false;
       }
@@ -46,9 +79,15 @@ export default function PropertyListings() {
 
       const matchesSearch =
         !query ||
-        property.title.toLowerCase().includes(query) ||
-        property.location.toLowerCase().includes(query) ||
-        property.propertyType.toLowerCase().includes(query);
+        property.title
+          .toLowerCase()
+          .includes(query) ||
+        property.location
+          .toLowerCase()
+          .includes(query) ||
+        property.propertyType
+          .toLowerCase()
+          .includes(query);
 
       const matchesListingType =
         listingType === "ALL" ||
@@ -64,7 +103,13 @@ export default function PropertyListings() {
         matchesPropertyType
       );
     });
-  }, [search, listingType, propertyType]);
+  }, [
+    properties,
+    search,
+    listingType,
+    propertyType,
+  ]);
+
 
   return (
     <div
@@ -110,6 +155,7 @@ export default function PropertyListings() {
         </div>
       </section>
 
+
       {/* SEARCH / FILTERS */}
       <section
         className="border-b border-[#E3E7EC]"
@@ -130,10 +176,13 @@ export default function PropertyListings() {
                 type="text"
                 placeholder="Search by property or location..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) =>
+                  setSearch(e.target.value)
+                }
                 className="w-full border border-[#DDE2E8] bg-white py-3.5 pl-11 pr-4 text-sm outline-none transition-colors focus:border-[#C99A4A]"
               />
             </div>
+
 
             {/* LISTING TYPE */}
             <select
@@ -143,10 +192,19 @@ export default function PropertyListings() {
               }
               className="border border-[#DDE2E8] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#C99A4A]"
             >
-              <option value="ALL">Sale & Rent</option>
-              <option value="FOR_SALE">For Sale</option>
-              <option value="FOR_RENT">For Rent</option>
+              <option value="ALL">
+                Sale & Rent
+              </option>
+
+              <option value="FOR_SALE">
+                For Sale
+              </option>
+
+              <option value="FOR_RENT">
+                For Rent
+              </option>
             </select>
+
 
             {/* PROPERTY TYPE */}
             <select
@@ -156,16 +214,31 @@ export default function PropertyListings() {
               }
               className="border border-[#DDE2E8] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#C99A4A]"
             >
-              <option value="ALL">All Property Types</option>
-              <option value="House">House</option>
-              <option value="Apartment">Apartment</option>
-              <option value="Townhouse">Townhouse</option>
-              <option value="Commercial">Commercial</option>
+              <option value="ALL">
+                All Property Types
+              </option>
+
+              <option value="House">
+                House
+              </option>
+
+              <option value="Apartment">
+                Apartment
+              </option>
+
+              <option value="Townhouse">
+                Townhouse
+              </option>
+
+              <option value="Commercial">
+                Commercial
+              </option>
             </select>
 
           </div>
         </div>
       </section>
+
 
       {/* LISTINGS */}
       <main className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
@@ -192,28 +265,92 @@ export default function PropertyListings() {
             className="text-sm"
             style={{ color: C.sub }}
           >
-            {filteredProperties.length}{" "}
-            {filteredProperties.length === 1
-              ? "property"
-              : "properties"}{" "}
-            found
+            {loading
+              ? "Loading..."
+              : `${filteredProperties.length} ${
+                  filteredProperties.length === 1
+                    ? "property"
+                    : "properties"
+                } found`}
           </p>
         </div>
 
-        {filteredProperties.length > 0 ? (
+
+        {/* LOADING */}
+        {loading ? (
+          <div
+            className="flex min-h-72 items-center justify-center border border-[#E3E7EC] px-6 text-center"
+            style={{ background: C.light }}
+          >
+            <p
+              className="text-sm"
+              style={{ color: C.sub }}
+            >
+              Loading properties...
+            </p>
+          </div>
+
+
+        ) : error ? (
+
+          /* API ERROR */
+          <div
+            className="flex min-h-72 flex-col items-center justify-center border border-[#E3E7EC] px-6 text-center"
+            style={{ background: C.light }}
+          >
+            <Building2
+              size={38}
+              strokeWidth={1.5}
+              style={{ color: C.gold }}
+            />
+
+            <h3
+              className="mt-5 text-xl font-bold"
+              style={{ color: C.navy }}
+            >
+              Unable to load properties
+            </h3>
+
+            <p
+              className="mt-2 max-w-md text-sm leading-6"
+              style={{ color: C.sub }}
+            >
+              {error}
+            </p>
+          </div>
+
+
+        ) : filteredProperties.length > 0 ? (
+
+          /* PROPERTY GRID */
           <div className="grid gap-x-7 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
+
             {filteredProperties.map((property) => (
               <article
                 key={property.id}
                 className="group overflow-hidden border border-[#E3E7EC] bg-white"
               >
+
                 {/* PROPERTY IMAGE */}
                 <div className="relative h-64 overflow-hidden">
-                  <img
-                    src={property.image}
-                    alt={property.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+                  {property.image ? (
+                    <img
+                      src={property.image}
+                      alt={property.title}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div
+                      className="flex h-full w-full items-center justify-center"
+                      style={{ background: C.light }}
+                    >
+                      <Building2
+                        size={44}
+                        strokeWidth={1.4}
+                        style={{ color: C.gold }}
+                      />
+                    </div>
+                  )}
 
                   <div
                     className="absolute left-4 top-4 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider"
@@ -230,12 +367,15 @@ export default function PropertyListings() {
                   {property.featured && (
                     <div
                       className="absolute right-4 top-4 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white"
-                      style={{ background: C.navy }}
+                      style={{
+                        background: C.navy,
+                      }}
                     >
                       Featured
                     </div>
                   )}
                 </div>
+
 
                 {/* PROPERTY INFORMATION */}
                 <div className="p-6">
@@ -259,38 +399,45 @@ export default function PropertyListings() {
                     className="mt-3 text-lg font-bold"
                     style={{ color: C.gold }}
                   >
-                   {formatPropertyPrice(property)}
+                    {formatPropertyPrice(property)}
                   </p>
+
 
                   {/* PROPERTY SPECS */}
                   <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3 border-y border-[#ECEFF3] py-4 text-xs text-[#5B6472]">
 
-                    {property.bedrooms && (
+                    {property.bedrooms != null && (
                       <div className="flex items-center gap-2">
                         <BedDouble size={16} />
+
                         <span>
                           {property.bedrooms} Beds
                         </span>
                       </div>
                     )}
 
-                    {property.bathrooms && (
+                    {property.bathrooms != null && (
                       <div className="flex items-center gap-2">
                         <Bath size={16} />
+
                         <span>
                           {property.bathrooms} Baths
                         </span>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2">
-                      <Maximize2 size={15} />
-                      <span>
-                        {property.size} m²
-                      </span>
-                    </div>
+                    {property.size != null && (
+                      <div className="flex items-center gap-2">
+                        <Maximize2 size={15} />
+
+                        <span>
+                          {property.size} m²
+                        </span>
+                      </div>
+                    )}
 
                   </div>
+
 
                   {/* VIEW DETAILS */}
                   <Link
@@ -308,11 +455,13 @@ export default function PropertyListings() {
                 </div>
               </article>
             ))}
+
           </div>
+
         ) : (
-          /* NO RESULTS */
-          <div
-            className="flex min-h-72 flex-col items-center justify-center border border-[#E3E7EC] px-6 text-center"
+
+        <div
+          className="flex min-h-72 flex-col items-center justify-center border border-[#E3E7EC] px-6 text-center"
             style={{ background: C.light }}
           >
             <Building2
@@ -350,7 +499,9 @@ export default function PropertyListings() {
             </button>
           </div>
         )}
+
       </main>
+
 
       {/* PROPERTY ENQUIRY CTA */}
       <section
@@ -383,9 +534,11 @@ export default function PropertyListings() {
           }}
         >
           Contact Us
+
           <ArrowRight size={16} />
         </button>
       </section>
+
 
       <Footer
         onContactClick={() => setContactOpen(true)}

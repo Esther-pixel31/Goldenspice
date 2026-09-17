@@ -1,20 +1,24 @@
 from logging.config import fileConfig
 import os
+from pathlib import Path
 
 from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from app.database import Base
+from app.models.admin_user import AdminUser
 from app.models.property import Property
-
 
 # Alembic configuration object.
 config = context.config
 
 
 # Load environment variables from Backend/.env.
-load_dotenv()
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+ENV_FILE = BACKEND_DIR / ".env"
+
+load_dotenv(dotenv_path=ENV_FILE)
 
 
 # Read the database connection URL.
