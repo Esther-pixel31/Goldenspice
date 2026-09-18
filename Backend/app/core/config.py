@@ -56,3 +56,16 @@ if ACCESS_TOKEN_EXPIRE_MINUTES <= 0:
     raise RuntimeError(
         "ACCESS_TOKEN_EXPIRE_MINUTES must be greater than zero."
     )
+DEFAULT_CORS_ORIGINS = (
+    "http://localhost:5173,"
+    "http://127.0.0.1:5173"
+)
+
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        DEFAULT_CORS_ORIGINS,
+    ).split(",")
+    if origin.strip()
+]

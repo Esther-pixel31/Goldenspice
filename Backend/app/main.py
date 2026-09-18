@@ -5,6 +5,7 @@ from sqlalchemy import text
 from app.api.routes.auth import router as auth_router
 from app.api.routes.properties import router as properties_router
 from app.database import engine
+from app.core.config import CORS_ORIGINS
 
 app = FastAPI(
     title="Goldenspice API",
@@ -15,10 +16,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
