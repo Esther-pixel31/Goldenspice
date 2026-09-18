@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -15,10 +15,8 @@ import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import ContactModal from "../components/ContactModal.jsx";
 
-import {
-  properties,
-  formatPropertyPrice,
-} from "../data/properties.js";
+import { getPropertyBySlug } from "../api/properties";
+import { formatPropertyPrice } from "../utils/property.js";
 
 const C = {
   navy: "#0B2043",
@@ -31,14 +29,137 @@ const C = {
 
 export default function PropertyDetails() {
   const { slug } = useParams();
-  const [contactOpen, setContactOpen] = useState(false);
 
-  const property = properties.find(
-    (item) => item.slug === slug
-  );
+const [contactOpen, setContactOpen] = useState(false);
+const [property, setProperty] = useState(null);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState("");
+
+useEffect(() => {
+  async function loadProperty() {
+    try {
+      setLoading(true);
+      setError("");
+      setProperty(null);
+
+      const data = await getPropertyBySlug(slug);
+
+      setProperty(data);
+    } catch (err) {
+      console.error(
+        "Failed to load property:",
+        err
+      );
+
+      setError(
+        "We could not load this property."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  loadProperty();
+}, [slug]);
 
   // PROPERTY NOT FOUND
   if (!property) {
+    // LOADING
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header
+          onContactClick={() => setContactOpen(true)}
+        />
+
+        <main className="mx-auto flex min-h-[60vh] max-w-7xl flex-col items-center justify-center px-6 text-center">
+          <Building2
+            size={48}
+            strokeWidth={1.5}
+            style={{ color: C.gold }}
+          />
+
+          <h1
+            className="mt-6 text-3xl font-bold"
+            style={{ color: C.navy }}
+          >
+            Loading Property
+          </h1>
+
+          <p
+            className="mt-3 max-w-lg text-sm leading-7"
+            style={{ color: C.sub }}
+          >
+            Please wait while we load the property details.
+          </p>
+        </main>
+
+        <Footer
+          onContactClick={() => setContactOpen(true)}
+        />
+
+        <ContactModal
+          open={contactOpen}
+          onClose={() => setContactOpen(false)}
+        />
+      </div>
+    );
+  }
+
+
+// API ERROR
+if (error) {
+  return (
+    <div className="min-h-screen bg-white">
+      <Header
+        onContactClick={() => setContactOpen(true)}
+      />
+
+      <main className="mx-auto flex min-h-[60vh] max-w-7xl flex-col items-center justify-center px-6 text-center">
+        <Building2
+          size={48}
+          strokeWidth={1.5}
+          style={{ color: C.gold }}
+        />
+
+        <h1
+          className="mt-6 text-3xl font-bold"
+          style={{ color: C.navy }}
+        >
+          Unable to Load Property
+        </h1>
+
+        <p
+          className="mt-3 max-w-lg text-sm leading-7"
+          style={{ color: C.sub }}
+        >
+          {error}
+        </p>
+
+        <Link
+          to="/property-listings"
+          className="mt-7 inline-flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-wider"
+          style={{
+            background: C.gold,
+            color: C.navy,
+          }}
+        >
+          <ArrowLeft size={15} />
+          Back to Properties
+        </Link>
+      </main>
+
+      <Footer
+        onContactClick={() => setContactOpen(true)}
+      />
+
+      <ContactModal
+        open={contactOpen}
+        onClose={() => setContactOpen(false)}
+      />
+    </div>
+  );
+}
     return (
       <div className="min-h-screen bg-white">
         <Header
