@@ -62,21 +62,7 @@ export default function Header({ onContactClick }) {
             className="h-12 w-auto"
           />
 
-          <div className="leading-none">
-            <div
-              className="text-[15px] font-bold tracking-wide text-white"
-              style={heading}
-            >
-              GOLDENSPICE
-            </div>
-
-            <div
-              className="text-[10.5px] uppercase tracking-[0.25em]"
-              style={{ color: C.gold }}
-            >
-              PROPERTY - MARKETING - TRAVEL
-            </div>
-          </div>
+        
         </Link>
 
         {/* DESKTOP NAVIGATION */}
