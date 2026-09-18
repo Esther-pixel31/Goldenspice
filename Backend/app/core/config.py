@@ -69,3 +69,33 @@ CORS_ORIGINS = [
     ).split(",")
     if origin.strip()
 ]
+APP_NAME = os.getenv(
+    "APP_NAME",
+    "Goldenspice API",
+)
+
+APP_ENV = os.getenv(
+    "APP_ENV",
+    "development",
+).strip().lower()
+
+APP_VERSION = os.getenv(
+    "APP_VERSION",
+    "1.0.0",
+)
+
+VALID_APP_ENVIRONMENTS = {
+    "development",
+    "testing",
+    "staging",
+    "production",
+}
+
+if APP_ENV not in VALID_APP_ENVIRONMENTS:
+    raise RuntimeError(
+        "APP_ENV must be one of: {}".format(
+            ", ".join(
+                sorted(VALID_APP_ENVIRONMENTS)
+            )
+        )
+    )
