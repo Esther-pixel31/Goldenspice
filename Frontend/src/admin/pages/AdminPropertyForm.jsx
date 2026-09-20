@@ -5,16 +5,19 @@ import {
   X,
 } from "lucide-react";
 import {
+  useEffect,
   useMemo,
   useState,
 } from "react";
 import {
   Link,
   useNavigate,
+  useParams,
 } from "react-router-dom";
-
 import {
   createAdminProperty,
+  getAdminProperty,
+  updateAdminProperty,
 } from "../api/adminApi.js";
 
 const INITIAL_FORM = {
@@ -43,6 +46,8 @@ function createSlug(value) {
 
 function AdminPropertyForm() {
   const navigate = useNavigate();
+  const { slug } = useParams();
+  const isEditing = Boolean(slug);
 
   const [form, setForm] =
     useState(INITIAL_FORM);
@@ -58,6 +63,105 @@ function AdminPropertyForm() {
     useState("");
   const [submitting, setSubmitting] =
     useState(false);
+  const [loading, setLoading] =
+  useState(isEditing);
+
+  useEffect(() => {
+    if (!isEditing) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    async function loadProperty() {
+      try {
+        const property =
+          await getAdminProperty(slug);
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!property) {
+          setError("Property not found.");
+          return;
+        }
+
+        setForm({
+          title: property.title || "",
+          slug: property.slug || "",
+          location: property.location || "",
+          property_type:
+            property.property_type || "",
+          listing_type:
+            property.listing_type ||
+            "FOR_SALE",
+          status:
+            property.status || "AVAILABLE",
+          price:
+            property.price !== null
+              ? String(property.price)
+              : "",
+          bedrooms:
+            property.bedrooms !== null
+              ? String(property.bedrooms)
+              : "",
+          bathrooms:
+            property.bathrooms !== null
+              ? String(property.bathrooms)
+              : "",
+          size:
+            property.size !== null
+              ? String(property.size)
+              : "",
+          description:
+            property.description || "",
+          image_url:
+            property.image_url || "",
+          featured:
+            Boolean(property.featured),
+        });
+
+        setFeatures(
+          Array.isArray(property.features)
+            ? property.features
+            : []
+        );
+
+        setSlugEdited(true);
+      } catch (requestError) {
+        if (cancelled) {
+          return;
+        }
+
+        if (
+          requestError.message ===
+          "AUTHENTICATION_REQUIRED"
+        ) {
+          navigate(
+            "/admin/login",
+            { replace: true }
+          );
+          return;
+        }
+
+        setError(
+          requestError.message ||
+            "Unable to load property."
+        );
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadProperty();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isEditing, slug, navigate]);
 
   const canSubmit = useMemo(() => {
     return Boolean(
@@ -179,13 +283,24 @@ function AdminPropertyForm() {
     };
 
     try {
-      await createAdminProperty(
-        propertyData
-      );
+      if (isEditing) {
+        await updateAdminProperty(
+          slug,
+          propertyData
+        );
 
-      setSuccess(
-        "Property created successfully."
-      );
+        setSuccess(
+          "Property updated successfully."
+        );
+      } else {
+        await createAdminProperty(
+          propertyData
+        );
+
+        setSuccess(
+          "Property created successfully."
+        );
+      }
 
       window.setTimeout(() => {
         navigate("/admin/properties", {
@@ -206,11 +321,26 @@ function AdminPropertyForm() {
 
       setError(
         requestError.message ||
-          "Unable to create property."
+          (isEditing
+            ? "Unable to update property."
+            : "Unable to create property.")
       );
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <section className="admin-page">
+        <div
+          className="admin-loading"
+          role="status"
+        >
+          Loading property...
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -230,11 +360,16 @@ function AdminPropertyForm() {
               PROPERTY MANAGEMENT
             </p>
 
-            <h1>Add Property</h1>
+            <h1>
+              {isEditing
+                ? "Edit Property"
+                : "Add Property"}
+            </h1>
 
             <p>
-              Create a new Goldenspice
-              property listing.
+              {isEditing
+                ? "Update this Goldenspice property listing."
+                : "Create a new Goldenspice property listing."}
             </p>
           </div>
         </div>
@@ -639,7 +774,9 @@ function AdminPropertyForm() {
 
             {submitting
               ? "Saving..."
-              : "Create Property"}
+              : isEditing
+                ? "Save Changes"
+                : "Create Property"}
           </button>
         </div>
       </form>
