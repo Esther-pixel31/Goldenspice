@@ -1,7 +1,9 @@
 import {
   ArrowLeft,
+  ImagePlus,
   Plus,
   Save,
+  Upload,
   X,
 } from "lucide-react";
 import {
@@ -11,6 +13,7 @@ import {
 } from "react";
 import {
   Link,
+  useLocation,
   useNavigate,
   useParams,
 } from "react-router-dom";
@@ -18,6 +21,7 @@ import {
   createAdminProperty,
   getAdminProperty,
   updateAdminProperty,
+  uploadAdminPropertyImage,
 } from "../api/adminApi.js";
 
 const INITIAL_FORM = {
@@ -46,6 +50,8 @@ function createSlug(value) {
 
 function AdminPropertyForm() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { slug } = useParams();
   const isEditing = Boolean(slug);
 
@@ -64,7 +70,16 @@ function AdminPropertyForm() {
   const [submitting, setSubmitting] =
     useState(false);
   const [loading, setLoading] =
-  useState(isEditing);
+    useState(isEditing);
+
+  const [selectedImage, setSelectedImage] =
+    useState(null);
+  const [imagePreview, setImagePreview] =
+    useState("");
+  const [uploadingImage, setUploadingImage] =
+    useState(false);
+  const [imageError, setImageError] =
+    useState("");
 
   useEffect(() => {
     if (!isEditing) {
@@ -138,10 +153,13 @@ function AdminPropertyForm() {
           requestError.message ===
           "AUTHENTICATION_REQUIRED"
         ) {
-          navigate(
-            "/admin/login",
-            { replace: true }
-          );
+          navigate("/admin/login", {
+            replace: true,
+            state: {
+              from: location.pathname,
+              reason: "session-expired",
+            },
+          });
           return;
         }
 
@@ -161,7 +179,12 @@ function AdminPropertyForm() {
     return () => {
       cancelled = true;
     };
-  }, [isEditing, slug, navigate]);
+  }, [
+    isEditing,
+    slug,
+    navigate,
+    location.pathname,
+  ]);
 
   const canSubmit = useMemo(() => {
     return Boolean(
@@ -247,15 +270,208 @@ function AdminPropertyForm() {
     return Number(value);
   }
 
+  function handleImageSelection(event) {
+    const file = event.target.files?.[0];
+
+    setImageError("");
+
+    if (!file) {
+      setSelectedImage(null);
+      setImagePreview("");
+      return;
+    }
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setSelectedImage(null);
+      setImagePreview("");
+      event.target.value = "";
+
+      setImageError(
+        "Please choose a JPG, PNG or WebP image."
+      );
+
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      setSelectedImage(null);
+      setImagePreview("");
+      event.target.value = "";
+
+      setImageError(
+        "Image must be 5 MB or smaller."
+      );
+
+      return;
+    }
+
+    setSelectedImage(file);
+
+    const previewUrl =
+      URL.createObjectURL(file);
+
+    setImagePreview(previewUrl);
+  }
+
+  async function handleImageUpload() {
+    if (!selectedImage || uploadingImage) {
+      return;
+    }
+
+    setUploadingImage(true);
+    setImageError("");
+
+    try {
+      const result =
+        await uploadAdminPropertyImage(
+          selectedImage
+        );
+
+      updateField(
+        "image_url",
+        result.image_url
+      );
+
+      setSelectedImage(null);
+      setImagePreview(result.image_url);
+    } catch (requestError) {
+      if (
+        requestError.message ===
+        "AUTHENTICATION_REQUIRED"
+      ) {
+        navigate("/admin/login", {
+          replace: true,
+          state: {
+            from: location.pathname,
+            reason: "session-expired",
+          },
+        });
+
+        return;
+      }
+
+      setImageError(
+        requestError.message ||
+          "Unable to upload image."
+      );
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
+  function validateForm() {
+    if (!form.title.trim()) {
+      return "Property title is required.";
+    }
+
+    if (!form.slug.trim()) {
+      return "Property slug is required.";
+    }
+
+    if (!form.location.trim()) {
+      return "Property location is required.";
+    }
+
+    if (!form.property_type.trim()) {
+      return "Property type is required.";
+    }
+
+    if (form.price === "") {
+      return "Property price is required.";
+    }
+
+    const price = Number(form.price);
+
+    if (
+      !Number.isFinite(price) ||
+      price < 0
+    ) {
+      return "Price must be a valid number greater than or equal to 0.";
+    }
+
+    if (form.bedrooms !== "") {
+      const bedrooms = Number(
+        form.bedrooms
+      );
+
+      if (
+        !Number.isInteger(bedrooms) ||
+        bedrooms < 0
+      ) {
+        return "Bedrooms must be a whole number greater than or equal to 0.";
+      }
+    }
+
+    if (form.bathrooms !== "") {
+      const bathrooms = Number(
+        form.bathrooms
+      );
+
+      if (
+        !Number.isInteger(bathrooms) ||
+        bathrooms < 0
+      ) {
+        return "Bathrooms must be a whole number greater than or equal to 0.";
+      }
+    }
+
+    if (form.size !== "") {
+      const size = Number(form.size);
+
+      if (
+        !Number.isFinite(size) ||
+        size < 0
+      ) {
+        return "Size must be a valid number greater than or equal to 0.";
+      }
+    }
+
+    if (form.image_url.trim()) {
+      try {
+        const imageUrl = new URL(
+          form.image_url.trim()
+        );
+
+        if (
+          imageUrl.protocol !== "http:" &&
+          imageUrl.protocol !== "https:"
+        ) {
+          return "Image URL must start with http:// or https://.";
+        }
+      } catch {
+        return "Please enter a valid image URL.";
+      }
+    }
+
+    return "";
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (!canSubmit || submitting) {
+    if (submitting || uploadingImage) {
       return;
     }
 
     setError("");
     setSuccess("");
+
+    const validationError =
+      validateForm();
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setSubmitting(true);
 
     const propertyData = {
@@ -312,10 +528,13 @@ function AdminPropertyForm() {
         requestError.message ===
         "AUTHENTICATION_REQUIRED"
       ) {
-        navigate(
-          "/admin/login",
-          { replace: true }
-        );
+        navigate("/admin/login", {
+          replace: true,
+          state: {
+            from: location.pathname,
+            reason: "session-expired",
+          },
+        });
         return;
       }
 
@@ -504,6 +723,7 @@ function AdminPropertyForm() {
                 <option value="FOR_SALE">
                   For Sale
                 </option>
+
                 <option value="FOR_RENT">
                   For Rent
                 </option>
@@ -528,12 +748,15 @@ function AdminPropertyForm() {
                 <option value="AVAILABLE">
                   Available
                 </option>
+
                 <option value="SOLD">
                   Sold
                 </option>
+
                 <option value="RENTED">
                   Rented
                 </option>
+
                 <option value="UNAVAILABLE">
                   Unavailable
                 </option>
@@ -545,6 +768,7 @@ function AdminPropertyForm() {
         <section className="admin-form-section">
           <div className="admin-form-section-heading">
             <h2>Property Details</h2>
+
             <p>
               Pricing and physical property
               information.
@@ -649,6 +873,7 @@ function AdminPropertyForm() {
         <section className="admin-form-section">
           <div className="admin-form-section-heading">
             <h2>Features & Media</h2>
+
             <p>
               Add property features and its
               primary image.
@@ -708,26 +933,97 @@ function AdminPropertyForm() {
               )}
             </div>
 
-            <label className="admin-form-field admin-form-field-wide">
-              <span>Image URL</span>
+            <div className="admin-form-field admin-form-field-wide">
+              <span>
+                Primary Property Image
+              </span>
 
-              <input
-                type="url"
-                value={form.image_url}
-                onChange={(event) =>
-                  updateField(
-                    "image_url",
-                    event.target.value
-                  )
-                }
-                placeholder="https://..."
-              />
+              {(imagePreview ||
+                form.image_url) && (
+                <div className="admin-image-preview">
+                  <img
+                    src={
+                      imagePreview ||
+                      form.image_url
+                    }
+                    alt="Property preview"
+                  />
+                </div>
+              )}
+
+              <div className="admin-image-upload">
+                <label className="admin-image-picker">
+                  <ImagePlus size={18} />
+
+                  <span>Choose Image</span>
+
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={
+                      handleImageSelection
+                    }
+                  />
+                </label>
+
+                {selectedImage && (
+                  <span className="admin-image-filename">
+                    {selectedImage.name}
+                  </span>
+                )}
+
+                <button
+                  type="button"
+                  className="admin-image-upload-button"
+                  onClick={
+                    handleImageUpload
+                  }
+                  disabled={
+                    !selectedImage ||
+                    uploadingImage
+                  }
+                >
+                  <Upload size={17} />
+
+                  {uploadingImage
+                    ? "Uploading..."
+                    : "Upload Image"}
+                </button>
+              </div>
 
               <small>
-                Direct image uploads will be
-                handled separately.
+                JPG, PNG or WebP. Maximum
+                file size: 5 MB.
               </small>
-            </label>
+
+              {imageError && (
+                <p className="admin-field-error">
+                  {imageError}
+                </p>
+              )}
+
+              <label className="admin-image-url-field">
+                <span>
+                  Or use an external image
+                  URL
+                </span>
+
+                <input
+                  type="url"
+                  value={form.image_url}
+                  onChange={(event) => {
+                    updateField(
+                      "image_url",
+                      event.target.value
+                    );
+
+                    setImagePreview("");
+                    setImageError("");
+                  }}
+                  placeholder="https://..."
+                />
+              </label>
+            </div>
 
             <label className="admin-featured-toggle admin-form-field-wide">
               <input
@@ -767,16 +1063,20 @@ function AdminPropertyForm() {
             type="submit"
             className="admin-save-button"
             disabled={
-              !canSubmit || submitting
+              !canSubmit ||
+              submitting ||
+              uploadingImage
             }
           >
             <Save size={18} />
 
             {submitting
               ? "Saving..."
-              : isEditing
-                ? "Save Changes"
-                : "Create Property"}
+              : uploadingImage
+                ? "Uploading Image..."
+                : isEditing
+                  ? "Save Changes"
+                  : "Create Property"}
           </button>
         </div>
       </form>

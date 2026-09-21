@@ -21,6 +21,10 @@ function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const sessionExpired =
+    location.state?.reason ===
+    "session-expired";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] =
     useState("");
@@ -101,6 +105,16 @@ function AdminLogin() {
           className="admin-login-form"
           onSubmit={handleSubmit}
         >
+          {sessionExpired && !error && (
+            <div
+              className="admin-login-message"
+              role="status"
+            >
+              Your session expired. Sign in
+              again to continue.
+            </div>
+          )}
+
           {error && (
             <div
               className="admin-login-error"

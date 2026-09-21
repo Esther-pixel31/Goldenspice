@@ -10,6 +10,7 @@ import {
 } from "react";
 import {
   Link,
+  useLocation,
   useNavigate,
 } from "react-router-dom";
 
@@ -46,6 +47,7 @@ function formatLabel(value) {
 
 function AdminProperties() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [properties, setProperties] =
     useState([]);
@@ -80,10 +82,13 @@ function AdminProperties() {
           requestError.message ===
           "AUTHENTICATION_REQUIRED"
         ) {
-          navigate(
-            "/admin/login",
-            { replace: true }
-          );
+          navigate("/admin/login", {
+            replace: true,
+            state: {
+              from: location.pathname,
+              reason: "session-expired",
+            },
+          });
           return;
         }
 
@@ -103,7 +108,7 @@ function AdminProperties() {
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const filteredProperties = useMemo(() => {
     const query =

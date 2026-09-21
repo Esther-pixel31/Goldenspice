@@ -54,11 +54,42 @@ async function readError(response) {
     if (typeof data.detail === "string") {
       return data.detail;
     }
-  } catch {
-    // Fall through to the generic message.
-  }
 
-  return `Request failed with status ${response.status}.`;
+    if (Array.isArray(data.detail)) {
+      const messages = data.detail
+        .map((item) => {
+          if (!item) {
+            return null;
+          }
+
+          const field = Array.isArray(item.loc)
+            ? item.loc
+                .filter(
+                  (part) =>
+                    part !== "body"
+                )
+                .join(".")
+            : "";
+
+          const message =
+            item.msg ||
+            "Invalid value.";
+
+          return field
+            ? `${field}: ${message}`
+            : message;
+        })
+        .filter(Boolean);
+
+      if (messages.length > 0) {
+        return messages.join(" ");
+      }
+    }
+
+    return `Request failed with status ${response.status}.`;
+  } catch {
+    return `Request failed with status ${response.status}.`;
+  }
 }
 
 export async function loginAdmin(email, password) {
@@ -103,8 +134,12 @@ export async function adminFetch(path, options = {}) {
     `Bearer ${token}`
   );
 
+  const isFormData =
+    options.body instanceof FormData;
+
   if (
     options.body &&
+    !isFormData &&
     !headers.has("Content-Type")
   ) {
     headers.set(
@@ -189,4 +224,34 @@ export async function updateAdminProperty(
   }
 
   return response.json();
+}
+export async function uploadAdminPropertyImage(
+  imageFile
+) {
+  const formData = new FormData();
+
+  formData.append("image", imageFile);
+
+  const response = await adminFetch(
+    "/api/uploads/property-image",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  const data = await response.json();
+
+  return {
+    ...data,
+    image_url: data.image_url.startsWith(
+      "http"
+    )
+      ? data.image_url
+      : `${API_BASE_URL}${data.image_url}`,
+  };
 }

@@ -1141,3 +1141,128 @@
     width: 100%;
   }
 }
+.admin-login-message {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(184, 134, 11, 0.35);
+  border-radius: 8px;
+  background: rgba(184, 134, 11, 0.08);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+/* Property image uploader */
+
+.admin-image-preview {
+  width: 100%;
+  max-width: 560px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  background: #f7f7f7;
+}
+
+.admin-image-preview img {
+  display: block;
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+}
+
+.admin-image-upload {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.admin-image-picker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 42px;
+  padding: 0.65rem 1rem;
+  border: 1px solid rgba(184, 134, 11, 0.45);
+  border-radius: 8px;
+  background: rgba(184, 134, 11, 0.07);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.admin-image-picker:hover {
+  background: rgba(184, 134, 11, 0.12);
+}
+
+.admin-image-picker input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-image-filename {
+  max-width: 260px;
+  overflow: hidden;
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-image-upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 42px;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.admin-image-upload-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.admin-field-error {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.admin-image-url-field {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.admin-image-url-field > span {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .admin-image-preview img {
+    height: 220px;
+  }
+
+  .admin-image-upload {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-image-picker,
+  .admin-image-upload-button {
+    width: 100%;
+  }
+
+  .admin-image-filename {
+    max-width: 100%;
+  }
+}

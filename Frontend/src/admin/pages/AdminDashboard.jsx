@@ -14,6 +14,7 @@ import {
 } from "react";
 import {
   Link,
+  useLocation,
   useNavigate,
 } from "react-router-dom";
 
@@ -65,6 +66,7 @@ function formatListingType(type) {
 
 function AdminDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [properties, setProperties] =
     useState([]);
@@ -88,10 +90,13 @@ function AdminDashboard() {
           requestError.message ===
           "AUTHENTICATION_REQUIRED"
         ) {
-          navigate(
-            "/admin/login",
-            { replace: true }
-          );
+          navigate("/admin/login", {
+            replace: true,
+            state: {
+              from: location.pathname,
+              reason: "session-expired",
+            },
+          });
           return;
         }
 
@@ -103,7 +108,7 @@ function AdminDashboard() {
         setLoading(false);
       }
     },
-    [navigate]
+    [navigate, location.pathname]
   );
 
   useEffect(() => {
@@ -148,7 +153,7 @@ function AdminDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const statistics = useMemo(() => {
     return {
