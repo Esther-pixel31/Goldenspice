@@ -1,0 +1,76 @@
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+
+import jwt
+from jwt.exceptions import InvalidTokenError
+from pwdlib import PasswordHash
+
+from app.core.config import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    JWT_ALGORITHM,
+    JWT_SECRET_KEY,
+)
+
+
+password_hash = PasswordHash.recommended()
+
+
+def hash_password(password: str) -> str:
+    return password_hash.hash(password)
+
+
+def verify_password(
+    plain_password: str,
+    hashed_password: str,
+) -> bool:
+    return password_hash.verify(
+        plain_password,
+        hashed_password,
+    )
+
+
+def create_access_token(
+    subject: str,
+    expires_minutes: Optional[int] = None,
+) -> str:
+    if expires_minutes is None:
+        expires_minutes = ACCESS_TOKEN_EXPIRE_MINUTES
+
+    now = datetime.now(timezone.utc)
+    expires_at = now + timedelta(
+        minutes=expires_minutes
+    )
+
+    payload = {
+        "sub": subject,
+        "iat": now,
+        "exp": expires_at,
+    }
+
+    return jwt.encode(
+        payload,
+        JWT_SECRET_KEY,
+        algorithm=JWT_ALGORITHM,
+    )
+
+
+def decode_access_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(
+            token,
+            JWT_SECRET_KEY,
+            algorithms=[JWT_ALGORITHM],
+        )
+    except InvalidTokenError as exc:
+        raise ValueError(
+            "Invalid or expired access token."
+        ) from exc
+
+    subject = payload.get("sub")
+
+    if not subject:
+        raise ValueError(
+            "Access token is missing a subject."
+        )
+
+    return payload

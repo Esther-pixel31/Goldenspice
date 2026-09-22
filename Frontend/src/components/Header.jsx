@@ -62,7 +62,7 @@ export default function Header({ onContactClick }) {
             className="h-12 w-auto"
           />
 
-
+        
         </Link>
 
         {/* DESKTOP NAVIGATION */}
