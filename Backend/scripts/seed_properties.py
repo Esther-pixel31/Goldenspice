@@ -1,4 +1,11 @@
+import sys
+from pathlib import Path
+
 from sqlalchemy import select
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from app.database import SessionLocal
 from app.models.property import Property
