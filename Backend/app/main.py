@@ -6,6 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.routes.auth import router as auth_router
+from app.api.routes.partners import router as partners_router
 from app.api.routes.properties import router as properties_router
 from app.api.routes.uploads import router as uploads_router
 from app.core.config import (
@@ -49,6 +50,7 @@ app.mount(
 )
 
 app.include_router(auth_router)
+app.include_router(partners_router)
 app.include_router(properties_router)
 app.include_router(uploads_router)
 

@@ -15,6 +15,8 @@ import AdminDashboard from "./admin/pages/AdminDashboard.jsx";
 import AdminLayout from "./admin/components/AdminLayout.jsx";
 import AdminProperties from "./admin/pages/AdminProperties.jsx";
 import AdminPropertyForm from "./admin/pages/AdminPropertyForm.jsx";
+import AdminPartners from "./admin/pages/AdminPartners.jsx";
+import AdminPartnerForm from "./admin/pages/AdminPartnerForm.jsx";
 
 function App() {
   return (
@@ -65,6 +67,20 @@ function App() {
             path="/admin/properties/:slug/edit"
             element={<AdminPropertyForm />}
           />
+          <Route
+              path="/admin/partners"
+              element={<AdminPartners />}
+            />
+
+            <Route
+              path="/admin/partners/new"
+              element={<AdminPartnerForm />}
+            />
+
+            <Route
+              path="/admin/partners/:partnerId/edit"
+              element={<AdminPartnerForm />}
+            />
         </Route>
       </Route>
     </Routes>

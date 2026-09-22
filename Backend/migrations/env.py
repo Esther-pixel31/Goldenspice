@@ -6,6 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from app.core.config import DATABASE_URL
 from app.database import Base
 from app.models.admin_user import AdminUser
+from app.models.partner import Partner
 from app.models.property import Property
 
 
