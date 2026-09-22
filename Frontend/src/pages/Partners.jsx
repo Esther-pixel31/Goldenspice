@@ -9,6 +9,11 @@ import {
   Users,
 } from "lucide-react";
 
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import Header from "../components/Header.jsx";
 import logo from "../assets/logo.png";
 
@@ -21,7 +26,41 @@ const C = {
   sub: "#5B6472",
 };
 
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://127.0.0.1:8000"
+).replace(/\/$/, "");
+
+
+function resolvePartnerLogoUrl(logoUrl) {
+  if (!logoUrl) {
+    return "";
+  }
+
+  if (
+    logoUrl.startsWith("http://") ||
+    logoUrl.startsWith("https://")
+  ) {
+    return logoUrl;
+  }
+
+  return `${API_BASE_URL}${
+    logoUrl.startsWith("/")
+      ? logoUrl
+      : `/${logoUrl}`
+  }`;
+}
+
 export default function Partners() {
+  const [partners, setPartners] =
+    useState([]);
+
+  const [partnersLoading, setPartnersLoading] =
+    useState(true);
+
+  const [partnersError, setPartnersError] =
+    useState("");
+
   const partnershipAreas = [
     {
       icon: Building2,
@@ -48,7 +87,51 @@ export default function Partners() {
         "Developing relationships that support reliable and convenient business and leisure travel solutions.",
     },
   ];
+      useEffect(() => {
+      let cancelled = false;
 
+      async function loadPartners() {
+        setPartnersLoading(true);
+        setPartnersError("");
+
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/api/partners`
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              "Unable to load partners."
+            );
+          }
+
+          const data = await response.json();
+
+          if (!cancelled) {
+            setPartners(
+              Array.isArray(data) ? data : []
+            );
+          }
+        } catch (requestError) {
+          if (!cancelled) {
+            setPartnersError(
+              requestError.message ||
+                "Unable to load partners."
+            );
+          }
+        } finally {
+          if (!cancelled) {
+            setPartnersLoading(false);
+          }
+        }
+      }
+
+      loadPartners();
+
+      return () => {
+        cancelled = true;
+      };
+    }, []);
   return (
     <div className="min-h-screen bg-white" style={{ color: C.text }}>
 
@@ -227,33 +310,84 @@ export default function Partners() {
             placeholders with the real partner logos.
           */}
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-
-            <div className="flex min-h-[150px] items-center justify-center border border-[#E3E7EC] bg-white p-8">
-              <span className="text-sm font-semibold text-[#9AA3AF]">
-                Partner Logo
-              </span>
+            {partnersLoading ? (
+            <div
+              className="py-10 text-center"
+              role="status"
+            >
+              <p
+                className="text-sm font-semibold"
+                style={{ color: C.sub }}
+              >
+                Loading partners...
+              </p>
             </div>
-
-            <div className="flex min-h-[150px] items-center justify-center border border-[#E3E7EC] bg-white p-8">
-              <span className="text-sm font-semibold text-[#9AA3AF]">
-                Partner Logo
-              </span>
+          ) : partnersError ? (
+            <div className="py-10 text-center">
+              <p
+                className="text-sm font-semibold"
+                style={{ color: C.sub }}
+              >
+                Our partner network is currently
+                unavailable. Please try again
+                later.
+              </p>
             </div>
+          ) : partners.length === 0 ? (
+            <div className="py-10 text-center">
+              <Handshake
+                size={32}
+                className="mx-auto mb-4"
+                style={{ color: C.gold }}
+              />
 
-            <div className="flex min-h-[150px] items-center justify-center border border-[#E3E7EC] bg-white p-8">
-              <span className="text-sm font-semibold text-[#9AA3AF]">
-                Partner Logo
-              </span>
+              <p
+                className="text-sm font-semibold"
+                style={{ color: C.sub }}
+              >
+                Our partner network will be
+                updated here soon.
+              </p>
             </div>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {partners.map((partner) => {
+                const logo = (
+                  <div className="flex min-h-[150px] items-center justify-center border border-[#E3E7EC] bg-white p-8 transition duration-200 hover:border-[#C99A4A] hover:shadow-sm">
+                    <img
+                      src={resolvePartnerLogoUrl(
+                        partner.logo_url
+                      )}
+                      alt={`${partner.name} logo`}
+                      className="max-h-[90px] max-w-full object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                );
 
-            <div className="flex min-h-[150px] items-center justify-center border border-[#E3E7EC] bg-white p-8">
-              <span className="text-sm font-semibold text-[#9AA3AF]">
-                Partner Logo
-              </span>
+                if (partner.website_url) {
+                  return (
+                    <a
+                      key={partner.id}
+                      href={partner.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Visit ${partner.name} website`}
+                      className="block"
+                    >
+                      {logo}
+                    </a>
+                  );
+                }
+
+                return (
+                  <div key={partner.id}>
+                    {logo}
+                  </div>
+                );
+              })}
             </div>
-
-          </div>
+          )}
         </div>
       </section>
 

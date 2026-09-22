@@ -1,5 +1,6 @@
 import {
   Building2,
+  Handshake,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -95,6 +96,19 @@ function AdminLayout() {
           </NavLink>
 
           <NavLink
+            to="/admin/partners"
+            onClick={closeMenu}
+            className={({ isActive }) =>
+              isActive
+                ? "admin-nav-link active"
+                : "admin-nav-link"
+            }
+          >
+            <Handshake size={19} />
+            <span>Partners</span>
+          </NavLink>
+
+          <NavLink
             to="/admin/properties/new"
             onClick={closeMenu}
             className={({ isActive }) =>
@@ -144,7 +158,7 @@ function AdminLayout() {
 
           <div className="admin-topbar-title">
             <strong>Goldenspice Admin</strong>
-            <span>Property Management</span>
+            <span>Administration</span>
           </div>
 
           <button

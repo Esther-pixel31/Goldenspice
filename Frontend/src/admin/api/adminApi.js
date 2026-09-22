@@ -255,3 +255,105 @@ export async function uploadAdminPropertyImage(
       : `${API_BASE_URL}${data.image_url}`,
   };
 }
+export async function getAdminPartners() {
+  const response = await adminFetch(
+    "/api/partners/admin/all"
+  );
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return response.json();
+}
+
+
+export async function createAdminPartner(
+  partnerData
+) {
+  const response = await adminFetch(
+    "/api/partners",
+    {
+      method: "POST",
+      body: JSON.stringify(partnerData),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return response.json();
+}
+
+
+export async function updateAdminPartner(
+  partnerId,
+  partnerData
+) {
+  const response = await adminFetch(
+    `/api/partners/${encodeURIComponent(
+      partnerId
+    )}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(partnerData),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  return response.json();
+}
+
+
+export async function deleteAdminPartner(
+  partnerId
+) {
+  const response = await adminFetch(
+    `/api/partners/${encodeURIComponent(
+      partnerId
+    )}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+}
+
+
+export async function uploadAdminPartnerLogo(
+  imageFile
+) {
+  const formData = new FormData();
+
+  formData.append("image", imageFile);
+
+  const response = await adminFetch(
+    "/api/uploads/partner-logo",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+
+  const data = await response.json();
+
+  return {
+    ...data,
+    image_url: data.image_url.startsWith(
+      "http"
+    )
+      ? data.image_url
+      : `${API_BASE_URL}${data.image_url}`,
+  };
+}

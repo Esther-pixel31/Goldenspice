@@ -21,10 +21,17 @@ router = APIRouter(
     tags=["uploads"],
 )
 
-UPLOAD_DIRECTORY = (
+UPLOAD_ROOT = (
     Path(__file__).resolve().parents[3]
     / "uploads"
-    / "properties"
+)
+
+PROPERTY_UPLOAD_DIRECTORY = (
+    UPLOAD_ROOT / "properties"
+)
+
+PARTNER_UPLOAD_DIRECTORY = (
+    UPLOAD_ROOT / "partners"
 )
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024
@@ -36,25 +43,19 @@ ALLOWED_IMAGE_TYPES = {
 }
 
 
-@router.post(
-    "/property-image",
-    status_code=status.HTTP_201_CREATED,
-)
-async def upload_property_image(
-    image: UploadFile = File(...),
-    current_admin: AdminUser = Depends(
-        get_current_admin
-    ),
-) -> Dict[str, str]:
-    del current_admin
-
+async def save_image(
+    image: UploadFile,
+    destination_directory: Path,
+) -> str:
     contents = await image.read(
         MAX_IMAGE_SIZE + 1
     )
 
     if len(contents) > MAX_IMAGE_SIZE:
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=(
+                status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+            ),
             detail="Image must be 5 MB or smaller.",
         )
 
@@ -71,7 +72,9 @@ async def upload_property_image(
 
     if detected_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
-            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            status_code=(
+                status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+            ),
             detail=(
                 "Only JPG, PNG and WebP "
                 "images are allowed."
@@ -87,19 +90,63 @@ async def upload_property_image(
         extension,
     )
 
-    UPLOAD_DIRECTORY.mkdir(
+    destination_directory.mkdir(
         parents=True,
         exist_ok=True,
     )
 
     destination = (
-        UPLOAD_DIRECTORY / filename
+        destination_directory / filename
     )
 
     destination.write_bytes(contents)
 
+    return filename
+
+
+@router.post(
+    "/property-image",
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_property_image(
+    image: UploadFile = File(...),
+    current_admin: AdminUser = Depends(
+        get_current_admin
+    ),
+) -> Dict[str, str]:
+    del current_admin
+
+    filename = await save_image(
+        image,
+        PROPERTY_UPLOAD_DIRECTORY,
+    )
+
     return {
         "image_url": (
             "/uploads/properties/{}"
+        ).format(filename),
+    }
+
+
+@router.post(
+    "/partner-logo",
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_partner_logo(
+    image: UploadFile = File(...),
+    current_admin: AdminUser = Depends(
+        get_current_admin
+    ),
+) -> Dict[str, str]:
+    del current_admin
+
+    filename = await save_image(
+        image,
+        PARTNER_UPLOAD_DIRECTORY,
+    )
+
+    return {
+        "image_url": (
+            "/uploads/partners/{}"
         ).format(filename),
     }
